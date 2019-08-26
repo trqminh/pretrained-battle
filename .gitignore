@@ -1,0 +1,6 @@
+*pyc
+*.hkl
+*.caffemodel
+imagenet_mean.binaryproto
+imagenet_mean.npy
+.idea
