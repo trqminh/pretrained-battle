@@ -1,9 +1,13 @@
 from torchvision import models, datasets, transforms
 from torch.utils.data import DataLoader
 import torch.nn as nn
+import numpy as np
+import caffe
+import torch
+import hickle as hkl
 
 
-def create_feature_dataset(net, datalist, dbprefix):
+def create_feature_dataset(net, datalist, dbprefix, mean_values, device):
     with open(datalist) as fr:
         lines = fr.readlines()
     lines = [line.rstrip() for line in lines]
@@ -12,7 +16,19 @@ def create_feature_dataset(net, datalist, dbprefix):
     for line_i, line in enumerate(lines):
         img_path, label = line.split()
         img = caffe.io.load_image(img_path)
-        feat = net.extract_feature(img)
+        img = np.transpose(img, (2, 0, 1))
+        # to tensor
+        img = torch.from_numpy(img)
+        # mean
+        normalize = transforms.Normalize(mean=(mean_values[0], mean_values[1], mean_values[2]), std=(0.5, 0.5, 0.5))
+        img = normalize(img)
+        img = img * 255.0
+        img = torch.unsqueeze(img, 0)
+        img = img.to(device)
+        net = net.eval()
+        net = net.to(device)
+        feat = net(img)
+
         feats.append(feat)
         label = int(label)
         labels.append(label)
@@ -24,20 +40,24 @@ def create_feature_dataset(net, datalist, dbprefix):
     hkl.dump(labels, './features/' + dbprefix + "_labels.hkl", mode="w")
 
 
-if __name__ == '__main__':
+def main():
+    torch.cuda.empty_cache()
+
     num_classes = 2
-
-    img_dataset = datasets.ImageFolder('~/Downloads/data/dogs-vs-cats/train/', transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=(103.939, 116.779, 123.68))
-    ]))
-    data_loader = DataLoader(dataset=img_dataset, batch_size=1, shuffle=True, num_workers=4)
-
-    model_ft = models.alexnet(pretrained=True)
+    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+    model_ft = models.resnet18(pretrained=True)
     num_feature = model_ft.fc.in_features
     model_ft.fc = nn.Linear(num_feature, num_classes)
+
+    create_feature_dataset(model_ft, datalist='../dataset/dogs-vs-cats/train.txt', dbprefix='cac_',
+                           mean_values=[103.939, 116.779, 123.68], device=device)
+
+
+
+if __name__ == '__main__':
+    main()
+
+
 
 
 
