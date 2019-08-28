@@ -57,18 +57,15 @@ def run_pytorch(model_name):
 
 
 if __name__ == '__main__':
-    # print('****** Alexnet ******')
-    # run_caffe("alexnet")
-    # print('****** VGG16 FC7 ******')
-    # run_caffe("vgg16_fc7")
-    # print('****** VGG16 FC6 ******')
-    # run_caffe("vgg16_fc6")
-    # print('****** GoogLenet ******')
-    # run_caffe("googlenet")
-    img = cv2.imread('/home/aioz-interns/Downloads/data/dogs-vs-cats/train/cat.3047.jpg')
-    print(img.shape)
-    img = caffe.io.load_image('~/Downloads/data/dogs-vs-cats/train/cat.3046.jpg')
-    print(img.shape)
+    print('****** Alexnet ******')
+    run_caffe("alexnet")
+    print('****** VGG16 FC7 ******')
+    run_caffe("vgg16_fc7")
+    print('****** VGG16 FC6 ******')
+    run_caffe("vgg16_fc6")
+    print('****** GoogLenet ******')
+    run_caffe("googlenet")
+
 
 
 

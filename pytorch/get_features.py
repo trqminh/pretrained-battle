@@ -26,7 +26,7 @@ def create_feature_dataset(net, datalist, dbprefix, mean_values, device):
         img = torch.unsqueeze(img, 0)
         img = img.to(device)
         net = net.eval()
-        net = net.to(device)
+
         feat = net(img)
 
         feats.append(feat)
@@ -48,10 +48,9 @@ def main():
     model_ft = models.resnet18(pretrained=True)
     num_feature = model_ft.fc.in_features
     model_ft.fc = nn.Linear(num_feature, num_classes)
-
+    model_ft = model_ft.to(device)
     create_feature_dataset(model_ft, datalist='../dataset/dogs-vs-cats/train.txt', dbprefix='cac_',
                            mean_values=[103.939, 116.779, 123.68], device=device)
-
 
 
 if __name__ == '__main__':
